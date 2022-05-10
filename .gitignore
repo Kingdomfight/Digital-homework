@@ -6,3 +6,4 @@ simulation
 *.bak
 *.qsf
 *.qws
+*.qarlog
