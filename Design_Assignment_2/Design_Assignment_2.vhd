@@ -33,10 +33,12 @@ architecture RTL of Design_Assignment_2 is
 	--p_Controller_2 signals
 	signal r_C2_State		: integer range 0 to 3 := 0;
 	signal r_cpd			: std_logic := '0';
+	signal r_out			: std_logic := '0';
 	
 	--p_Datapath signals
 	type t_Data is array(0 to 4) of signed(7 downto 0);
 	signal r_Data			: t_Data := (others => x"00");
+	signal r_Data_Out		: signed(7 downto 0) := x"00";
 	
 begin
 
@@ -95,26 +97,28 @@ begin
 				when 0 =>
 					o_valid <= '0';
 					if o_rdy = '0' and r_avail = '1' then
+						--Start processing
 						r_cpd <= '1';
 						r_C2_State <= 1;
 					end if;
 					
-				--Delay o_valid for one clk period
+				--Output data
 				when 1 =>
-					o_valid <= '1';
+					r_cpd <= '0';
+					r_out <= '1';
 					r_C2_State <= 2;
 				
-				--Wait for ready signal
-				when 2 =>
-					if o_rdy = '1' then
-						r_cpd <= '0';
-						r_C2_State <= 3;
-					end if;
-				
 				--Delay o_valid for one clk period
+				when 2 =>
+					o_valid <= '1';
+					r_C2_State <= 3;
+				
+				--Wait for ready signal
 				when 3 =>
-					o_valid <= '0';
-					r_C2_State <= 0;
+					if o_rdy = '1' then
+						r_out <= '0';
+						r_C2_State <= 0;
+					end if;
 					
 			end case;
 		end if;
@@ -138,7 +142,7 @@ begin
 				
 				r_Data(2) <= r_Data(1);
 				r_Data(3) <= r_Data(2);
-				r_Data(4) <= r_Data(3);
+				r_Data(4) <= not(r_Data(3)) + x"01";	--Negate
 			end if;
 			
 			if r_cpd = '1' then
@@ -146,7 +150,11 @@ begin
 				for i in 0 to 4 loop
 					v_Out := v_Out + r_Data(i);
 				end loop;
-				d_out <= v_Out;
+				r_Data_Out <= v_Out;
+			end if;
+			
+			if r_out = '1' then
+				d_out <= r_Data_Out;
 			else
 				d_out <= (others => 'Z');
 			end if;

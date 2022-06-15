@@ -7,3 +7,5 @@ simulation
 *.qsf
 *.qws
 *.qarlog
+*.done
+*.summary
