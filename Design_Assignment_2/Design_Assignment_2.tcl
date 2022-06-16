@@ -15,7 +15,7 @@
 
 # Quartus Prime: Generate Tcl File for Project
 # File: Design_Assignment_2.tcl
-# Generated on: Tue May 10 15:57:56 2022
+# Generated on: Thu Jun 16 15:56:13 2022
 
 # Load Quartus Prime Tcl Project package
 package require ::quartus::project
@@ -43,7 +43,6 @@ if {[is_project_open]} {
 if {$make_assignments} {
 	set_global_assignment -name FAMILY "Cyclone V"
 	set_global_assignment -name DEVICE 5CSEMA5F31C6
-	set_global_assignment -name TOP_LEVEL_ENTITY TB
 	set_global_assignment -name ORIGINAL_QUARTUS_VERSION 17.0.0
 	set_global_assignment -name PROJECT_CREATION_TIME_DATE "14:35:02  APRIL 28, 2022"
 	set_global_assignment -name LAST_QUARTUS_VERSION "17.0.0 Lite Edition"
@@ -60,11 +59,10 @@ if {$make_assignments} {
 	set_global_assignment -name VHDL_SHOW_LMF_MAPPING_MESSAGES OFF
 	set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
 	set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
-	set_global_assignment -name VHDL_FILE Design_Assignment_2.vhd
-	set_global_assignment -name VHDL_FILE TB.vhd
 	set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 	set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 	set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+	set_global_assignment -name VHDL_FILE Design_Assignment_2.vhd
 	set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
 
 	# Commit assignments

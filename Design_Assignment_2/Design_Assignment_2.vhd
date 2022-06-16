@@ -25,7 +25,7 @@ end entity Design_Assignment_2;
 architecture RTL of Design_Assignment_2 is
 	
 	--p_Controller_1 signals
-	signal r_C1_State		: integer range 0 to 2 := 0;
+	signal r_C1_State		: integer range 0 to 3 := 0;
 	signal r_avail			: std_logic := '0';
 	signal r_LD_Delay 	: integer range 0 to 4 := 0;
 	signal r_LD_Active	: std_logic := '0';
@@ -57,9 +57,9 @@ begin
 					r_LD_Active <= '0';
 					if i_valid = '1' then
 						r_LD_Active <= '1';
-						r_C1_State <= 1;
 						r_LD_Delay <= 4;
 						r_avail <= '0';
+						r_C1_State <= 1;
 					end if;
 				
 				--Load new data
@@ -69,14 +69,25 @@ begin
 					else
 						r_LD_Active <= '0';
 						r_avail <= '1';
-						r_C1_State <= 2;
 						i_rdy <= '1';
+						r_C1_State <= 2;
 					end if;
 				
-				--Wait until sender and datapath are ready
+				--Put i_rdy low when i_valid goes low, make sure the datapath has started processing
 				when 2 =>
-					if i_valid = '0' and r_cpd = '0' then
+					if i_valid = '0' then
 						i_rdy <= '0';
+					end if;
+					if r_cpd = '1' then
+						r_C1_State <= 3;
+					end if;
+					
+				--Put i_rdy low when i_valid goes low, wait until processing is done and user is ready for new input
+				when 3 =>
+					if i_valid = '0' then
+						i_rdy <= '0';
+					end if;
+					if r_cpd = '0' and i_rdy = '0' then
 						r_C1_State <= 0;
 					end if;
 				
@@ -86,6 +97,7 @@ begin
 	
 	--Controller 2 handles the output interface
 	p_Controller_2 : process(CLK, RST)
+		variable v_avail : std_logic;
 	begin
 		if RST = '1' then
 			r_C2_State <= 0;
@@ -96,6 +108,7 @@ begin
 				--Wait for data and receiver to be ready
 				when 0 =>
 					o_valid <= '0';
+					v_avail := '1';
 					if o_rdy = '0' and r_avail = '1' then
 						--Start processing
 						r_cpd <= '1';
@@ -115,9 +128,16 @@ begin
 				
 				--Wait for ready signal
 				when 3 =>
+					--Make sure that new data is available
+					if r_avail = '0' then
+						v_avail := '0';
+					end if;
 					if o_rdy = '1' then
 						r_out <= '0';
-						r_C2_State <= 0;
+						o_valid <= '0';
+						if v_avail = '0' then
+							r_C2_State <= 0;
+						end if;
 					end if;
 					
 			end case;
@@ -145,11 +165,11 @@ begin
 				r_Data(4) <= not(r_Data(3)) + x"01";	--Negate
 			end if;
 			
-			if r_cpd = '1' then
-				v_Out := x"00";
-				for i in 0 to 4 loop
+			v_Out := x"00";
+			for i in 0 to 4 loop
 					v_Out := v_Out + r_Data(i);
-				end loop;
+			end loop;
+			if r_cpd = '1' then
 				r_Data_Out <= v_Out;
 			end if;
 			
